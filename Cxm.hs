@@ -1,3 +1,17 @@
+module CXM (
+    parse,
+    parseCMX,
+    vAuxRow,
+    vAuxCol,
+    vAuxBytes,
+    hAuxRow,
+    hAuxCol,
+    hAuxBytes
+    setFlag,
+    unSetFlag,
+    bodyBytes) where
+
+
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Word as W
@@ -12,9 +26,9 @@ data CMX = CMX {
     hAuxCol :: Int,
     setFlag :: Char,
     unSetFlag :: Char,
-    vAuxMatrix :: B.ByteString,
-    hAuxMatrix :: B.ByteString,
-    bodyMatrix :: B.ByteString
+    vAuxBytes :: B.ByteString,
+    hAuxBytes :: B.ByteString,
+    bodyBytes :: B.ByteString
 } deriving (Show)
 
 data ParseState = ParseState {

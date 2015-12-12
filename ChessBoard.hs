@@ -11,6 +11,7 @@ module ChessBoard (
     cleanMosaic) where
 
 import Data.Matrix
+import CXM
 import Status
 
 data ChessBoard = ChessBoard {

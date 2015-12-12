@@ -31,41 +31,32 @@ loadChessBoard (vr:vc:vs) (hr:hc:hs) ms =
 
 switchLocation :: Int -> Int -> ChessBoard -> ChessBoard
 switchLocation row col d = ChessBoard {
-                                vHeader = oldVHeader,
-                                hHeader = oldHHeader,
-                                goldenMosaic = oldGoldenMosaic,
+                                vHeader = vHeader d,
+                                hHeader = hHeader d,
+                                goldenMosaic = goldenMosaic d,
                                 userMosaic = setElem (switch oldVal) (row, col) oldMosaic
                                 } where
-                                    oldVHeader = vHeader d
-                                    oldHHeader = hHeader d
-                                    oldGoldenMosaic = goldenMosaic d
                                     oldMosaic = userMosaic d
                                     oldVal = getElem row col $ userMosaic d
 
 getMosaicCol :: Int -> ChessBoard -> ChessBoard
-getMosaicCol col d = ChessBoard {
-                        vHeader = oldVHeader,
-                        hHeader = oldHHeader,
-                        goldenMosaic = oldGoldenMosaic,
+getMosaicCol col d = ChessBoard {                        
+                        vHeader = vHeader d,
+                        hHeader = hHeader d,
+                        goldenMosaic = goldenMosaic d,
                         userMosaic = changeRow oldUserMosaic
                         } where
-                            oldVHeader = vHeader d
-                            oldHHeader = hHeader d
-                            oldGoldenMosaic = goldenMosaic d
                             oldUserMosaic = userMosaic d
                             changeRow = mapCol goldenCol col
                             goldenCol = \row _ -> getElem row col $ goldenMosaic d
 
 getMosaicRow :: Int -> ChessBoard -> ChessBoard
 getMosaicRow row d = ChessBoard {
-                        vHeader = oldVHeader,
-                        hHeader = oldHHeader,
-                        goldenMosaic = oldGoldenMosaic,
+                        vHeader = vHeader d,
+                        hHeader = hHeader d,
+                        goldenMosaic = goldenMosaic d,
                         userMosaic = changeRow oldUserMosaic
                         } where
-                            oldVHeader = vHeader d
-                            oldHHeader = hHeader d
-                            oldGoldenMosaic = goldenMosaic d
                             oldUserMosaic = userMosaic d
                             changeRow = mapRow goldenRow row
                             goldenRow = \col _ -> getElem row col $ goldenMosaic d
@@ -75,14 +66,11 @@ checkMosaic d = goldenMosaic d == (userMosaic d)
 
 cleanMosaic :: ChessBoard -> ChessBoard
 cleanMosaic d = ChessBoard {
-                        vHeader = oldVHeader,
-                        hHeader = oldHHeader,
-                        goldenMosaic = oldGoldenMosaic,
+                        vHeader = vHeader d,
+                        hHeader = hHeader d,
+                        goldenMosaic = goldenMosaic d,
                         userMosaic = newUserMosaic
                         } where
-                            oldVHeader = vHeader d
-                            oldHHeader = hHeader d
-                            oldGoldenMosaic = goldenMosaic d
                             newUserMosaic = matrix row col (\(_, _) -> Unknown)
                             row = nrows $ goldenMosaic d
                             col = ncols $ goldenMosaic d

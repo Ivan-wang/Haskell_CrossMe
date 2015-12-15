@@ -6,7 +6,7 @@ module CXM (
     vAuxBytes,
     hAuxRow,
     hAuxCol,
-    hAuxBytes
+    hAuxBytes,
     setFlag,
     unSetFlag,
     bodyBytes) where
@@ -15,9 +15,10 @@ module CXM (
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Word as W
+import qualified Control.Applicative
+import Control.Monad
 import System.IO
-import Data.Char as C
-
+import Utils
 
 data CMX = CMX {
     vAuxRow :: Int,
@@ -41,17 +42,26 @@ newtype Parser a = Parser {
     runParser :: ParseState -> Either String (a, ParseState)
 }
 
---identity generate a parser that do not modify state
---an injector, which inject a value in parser result
-identity :: a -> Parser a
-identity a = Parser (\s -> Right (a, s))
-
 --Apply f to parser result
 --run a parser, get the result then do some thing
 --after that it injects result of function in to new state
 --the ParserState is pass to new parser in background
 instance Functor Parser where
     fmap f parser = parser ==> \result -> identity (f result)
+
+instance Applicative Parser where
+    pure = identity
+    (<*>) = ap
+
+instance Monad Parser where
+    return = identity
+    (>>=) = (==>)
+    (>>) = (==>&)
+
+--identity generate a parser that do not modify state
+--an injector, which inject a value in parser result
+identity :: a -> Parser a
+identity a = Parser (\s -> Right (a, s))
 
 --Chain the depended parser together
 --unpack result from first parser then generate a new parser
@@ -151,12 +161,3 @@ main =
         hClose inh
         return (parse parseCMX instr)
 
---toolkit functions
-w2c :: W.Word8 -> Char
-w2c = C.chr . fromIntegral
-
-isChar :: Char -> Char-> Bool
-isChar = (==)
-
-w2i :: W.Word8 -> Int
-w2i x = fromIntegral(x)::Int

@@ -21,8 +21,19 @@ data ChessBoard = ChessBoard {
   userMosaic :: Matrix Status
 }
 
-loadChessBoard :: [Int] -> [Int] -> [Status] -> ChessBoard
-loadChessBoard (vr:vc:vs) (hr:hc:hs) ms = 
+loadChessBoard :: CXM -> ChessBoard
+loadChessBoard cxm = ChessBoard {
+    vHeader = fromList (vAuxRow cmx) (vAuxCol cmx) ((bStr2IntList . vAuxBytes) cmx),
+    hHeader = fromList (hAuxRow cmx) (hAuxCol cmx) ((bStr2IntList . hAuxBytes) cmx),
+    goldenMosaic = fromList (hAuxRow cmx) (vAuxCol cmx) status
+    userMosaic = matrix (hAuxRow cmx) (vAuxCol cmx) (\(_, _) -> (Unknown::Status))
+} where
+    status = ((bStr2IntList s u) . bodyBytes) cmx
+    s = setFlag cmx
+    u = unsetFlag cmx
+
+loadChessBoard' :: [Int] -> [Int] -> [Status] -> ChessBoard
+loadChessBoard' (vr:vc:vs) (hr:hc:hs) ms = 
     ChessBoard {
         vHeader = fromList vr vc vs,
         hHeader = fromList hr hc hs,

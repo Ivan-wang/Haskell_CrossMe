@@ -40,8 +40,8 @@ loadChessBoard :: CXM -> ChessBoard
 loadChessBoard cxm = ChessBoard {
     vHeader = fromList (vAuxRow cxm) (vAuxCol cxm) ((bStr2IntList . vAuxBytes) cxm),
     hHeader = fromList (hAuxRow cxm) (hAuxCol cxm) ((bStr2IntList . hAuxBytes) cxm),
-    goldenMosaic = fromList (hAuxRow cxm) (vAuxCol cxm) status,
-    userMosaic = matrix (hAuxRow cxm) (vAuxCol cxm) (\(_, _) -> (Unknown::Status))
+    goldenMosaic = fromList (vAuxRow cxm) (hAuxCol cxm) status,
+    userMosaic = matrix (vAuxRow cxm) (hAuxCol cxm) (\(_, _) -> (Unknown::Status))
 } where
     status = ((bStr2StatusList s u) . bodyBytes) cxm
     s = setFlag cxm

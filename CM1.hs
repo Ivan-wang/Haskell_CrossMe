@@ -4,11 +4,12 @@ module Main where
 
 import Graphics.UI.WX
 import Graphics.UI.WXCore
+import ChessBoard
 import Data.Matrix
 import Status
 import CXM
 import System.IO as S
-import Data.ByteString as B
+import qualified Data.ByteString as B
 
 main :: IO()
 main = run gui
@@ -25,22 +26,19 @@ gui =  do -- create top frame
     --scrolledWindowSetScrollbars s 20 20 40 40 0 0 False
 
     set f [ layout := column 0
-                        [ fill $ widget p
-                        , hfloatCentre $ margin 5 $ row 5 [widget q, widget h, widget a]
-                        ]
-            , defaultButton := q
+            [ fill $ widget p
+            , hfloatCentre $ margin 5 $ row 5 [widget q, widget h, widget a]
             ]
+        , defaultButton := q
+        ]
 
     varC <- varCreate initChessBoard
     cb <- testOfLoad
     case cb of
-        Nothing -> return (Nothing)
+        Nothing -> varUpdate varC (id) 
         Just c -> do
-            varUpdate varC(\old -> loadChessBoard c)
-
-
+            varUpdate varC (\old -> loadChessBoard c)
     windowOnPaint p (paintBalls varC)
-
     -- left-click: new ball, right-click: new window
     windowOnMouse p False {- no motion events -} (onMouse1 p varC)
     windowShow f
@@ -55,29 +53,27 @@ onMouse1 w vballs mouse
 
     -- add a new ball
 dropBall w varC pt
-      = do varUpdate varC (switchLocation (rownum pt) (colnum pt))
-           windowRefresh w False
+      = do
+        c <- varGet varC 
+        varUpdate varC (switchLocation (rownum pt $ (nrows . hHeader) c) (colnum pt $ (ncols . vHeader) c))
+        windowRefresh w False
 
     -- paint the balls
 paintBalls varC dc  viewRect --updateAreas
       = withBrushStyle (BrushStyle BrushSolid white)  $ \brushWhite ->
-        --withPenStyle (penColored blue 5) $ \penMedBlue ->
-        do -- dcClearRect dc view
-           dcSetBrush dc brushWhite
-           dcDrawRectangle dc (rect (pt 20 20) (sz 500 500))
-           --drawgrid dc (1, (Rect 80 80 20 20))
-           --drawgrid2 dc ([1,0,-1,1,1] ,(Rect 100 100 20 20))
-           user<-VarGet varC
-           drawgrid3 dc ((toLists . userMosaic) user)(Rect 80 80 20 20)
-           drawLine2 dc (pt 80 80) cols rows
-           drawLine2_ dc (pt 80 80)cols rows
-            writeNum3 dc (pt 85 newY) ((toLists . vHeader) user)
-            writeNum3 dc (pt newX 85) ((toLists . hHeader) user)
-            where
-                newY = 85 + 20 * ((nrows . hHeader) user)
+        do 
+            dcSetBrush dc brushWhite
+            dcDrawRectangle dc (rect (pt 20 20) (sz 500 500))
+            user <- varGet varC
+            let newY = 85 + 20 * ((nrows . hHeader) user)
                 newX = 85 + 20 * ((ncols . vHeader) user)
-                cols = ((nrows . hHeader) user)+ ((ncols . vHeader) user)
-                rows =  ((nrows . vHeader) user)+ ((ncols . hHeader) user)
+                cols = ((ncols . hHeader) user) + ((ncols . vHeader) user)
+                rows = ((nrows . vHeader) user) + ((nrows . hHeader) user)
+            drawgrid3 dc ((toLists . userMosaic) user)(Rect (newX-5) (newY-5) 20 20)
+            writeNum3 dc (pt newX 85) ((toLists . vHeader) user)
+            drawLine2 dc (pt 80 80) cols rows
+            drawLine2_ dc (pt 80 80) cols rows
+            writeNum3 dc (pt 85 newY) ((toLists . hHeader) user)
        
 --horizontal--         
 drawLine::DC()->Int->Point->IO()
@@ -105,11 +101,12 @@ writeNum3::DC()->Point->[[Int]]->IO()
 writeNum3 dc (Point x y) mm = mapM_(\a->do writeNum2 dc(Point x (y+20*a))(mm!!a))[0..((length mm)-1)]
 --drawgrid::DC()->Int->Rect->IO()
 drawgrid dc (n, (Rect x y w h))
-      |n==1      = dcWithBrushStyle dc (BrushStyle BrushSolid darkgrey) $
+      |n==Set      = dcWithBrushStyle dc (BrushStyle BrushSolid darkgrey) $
         dcDrawRectangle dc (rect (pt x y) (sz w h))
-      |n== -1  = dcWithBrushStyle dc (BrushStyle (BrushHatch HatchCrossDiag) black) $
+      |n==Unset  = dcWithBrushStyle dc (BrushStyle (BrushHatch HatchCrossDiag) black) $
          dcDrawRectangle dc (rect (pt x y) (sz w h))
-      |n==0  = return()
+      |n==Unknown  = dcWithBrushStyle dc (BrushStyle BrushSolid white) $
+        dcDrawRectangle dc (rect (pt x y) (sz w h))
 --drawgrid2::DC()->[Int]->Rect->IO()      
 drawgrid2 dc (m, (Rect x y w h))=mapM_(drawgrid  dc)[(a, (Rect (x+20*b) y 20 20))|(a,b)<-zip m [0..(length(m)-1)]]
 --drawgird3
@@ -131,7 +128,7 @@ testOfLoad = do
     instr <- B.hGetContents inh
     hClose inh
     case parse parseCMX instr of
-        Right c -> return (Just( loadChessBoard c))
+        Right c -> return (Just c)
         Left err -> do
             S.putStrLn err
             return (Nothing)

@@ -135,12 +135,12 @@ parseBlock l = (((B.take l) . remain) <$> getState) ==> \list ->
 
 parseCMX :: Parser CXM
 parseCMX = (matchPrefix "CXM")  ==> \header -> skipSpace                 ==>&
-            (matchPrefix "V")   ==> \vHeader -> skipSpace                ==>&
-            parseInt    ==> \vRow -> parseInt   ==> \vCol -> skipSpace   ==>& 
-            (parseBlock (vRow * vCol))  ==> \vBlock -> skipSpace         ==>&
             (matchPrefix "H")   ==> \hHeader -> skipSpace                ==>&
-            parseInt    ==> \hRow -> parseInt   ==> \hCol -> skipSpace   ==>&
-            (parseBlock (hRow * hCol))  ==> \hBlock -> skipSpace         ==>& 
+            parseInt    ==> \hRow -> parseInt   ==> \hCol -> skipSpace   ==>& 
+            (parseBlock (hRow * hCol))  ==> \hBlock -> skipSpace         ==>&
+            (matchPrefix "V")   ==> \vHeader -> skipSpace                ==>&
+            parseInt    ==> \vRow -> parseInt   ==> \vCol -> skipSpace   ==>&
+            (parseBlock (vRow * vCol))  ==> \vBlock -> skipSpace         ==>& 
             (matchPrefix "B")   ==> \bHeader -> skipSpace                ==>&
             parseInt    ==> \bRow -> parseInt   ==> \bCol -> skipSpace   ==>&
             parseChar   ==> \sC -> parseChar    ==> \uC -> skipSpace     ==>&

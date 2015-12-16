@@ -1,4 +1,5 @@
 module CXM (
+    CXM,
     parse,
     parseCMX,
     vAuxRow,
@@ -20,7 +21,7 @@ import Control.Monad
 import System.IO
 import Utils
 
-data CMX = CMX {
+data CXM = CXM {
     vAuxRow :: Int,
     vAuxCol :: Int,
     hAuxRow :: Int,
@@ -132,8 +133,8 @@ parseBlock l = (((B.take l) . remain) <$> getState) ==> \list ->
                 then (_dropBlock l) ==> \_ -> identity list
                 else Parser (\_ -> Left "block size not match")
 
-parseCMX :: Parser CMX
-parseCMX = (matchPrefix "CMX")  ==> \header -> skipSpace                 ==>&
+parseCMX :: Parser CXM
+parseCMX = (matchPrefix "CXM")  ==> \header -> skipSpace                 ==>&
             (matchPrefix "V")   ==> \vHeader -> skipSpace                ==>&
             parseInt    ==> \vRow -> parseInt   ==> \vCol -> skipSpace   ==>& 
             (parseBlock (vRow * vCol))  ==> \vBlock -> skipSpace         ==>&
@@ -144,7 +145,7 @@ parseCMX = (matchPrefix "CMX")  ==> \header -> skipSpace                 ==>&
             parseInt    ==> \bRow -> parseInt   ==> \bCol -> skipSpace   ==>&
             parseChar   ==> \sC -> parseChar    ==> \uC -> skipSpace     ==>&
             (parseBlock (bRow * bCol)) ==> 
-            (\bBlock -> identity (CMX vRow vCol hRow hCol sC uC vBlock hBlock bBlock))
+            (\bBlock -> identity (CXM vRow vCol hRow hCol sC uC vBlock hBlock bBlock))
 
 -------------To test a parser-------------------------------
 
@@ -156,7 +157,7 @@ parse parser initS
 
 main = 
     do
-        inh <- openBinaryFile "u.cmx" ReadMode
+        inh <- openBinaryFile "u.cxm" ReadMode
         instr <- B.hGetContents inh
         hClose inh
         return (parse parseCMX instr)

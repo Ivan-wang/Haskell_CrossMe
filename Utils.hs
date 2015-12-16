@@ -1,6 +1,9 @@
 module Utils (
     w2c,
-    w2i
+    w2i,
+    char2Status,
+    bStr2IntList,
+    bStr2StatusList
     ) where
 
 import qualified Data.ByteString as B

@@ -10,27 +10,30 @@ module ChessBoard (
     checkMosaic,
     cleanMosaic) where
 
+import System.IO as S
+import Data.ByteString as B
 import Data.Matrix
 import CXM
 import Status
+import Utils
 
 data ChessBoard = ChessBoard {
   vHeader :: Matrix Int,
   hHeader :: Matrix Int,
   goldenMosaic :: Matrix Status,
   userMosaic :: Matrix Status
-}
+} deriving (Show)
 
 loadChessBoard :: CXM -> ChessBoard
 loadChessBoard cxm = ChessBoard {
-    vHeader = fromList (vAuxRow cmx) (vAuxCol cmx) ((bStr2IntList . vAuxBytes) cmx),
-    hHeader = fromList (hAuxRow cmx) (hAuxCol cmx) ((bStr2IntList . hAuxBytes) cmx),
-    goldenMosaic = fromList (hAuxRow cmx) (vAuxCol cmx) status
-    userMosaic = matrix (hAuxRow cmx) (vAuxCol cmx) (\(_, _) -> (Unknown::Status))
+    vHeader = fromList (vAuxRow cxm) (vAuxCol cxm) ((bStr2IntList . vAuxBytes) cxm),
+    hHeader = fromList (hAuxRow cxm) (hAuxCol cxm) ((bStr2IntList . hAuxBytes) cxm),
+    goldenMosaic = fromList (hAuxRow cxm) (vAuxCol cxm) status,
+    userMosaic = matrix (hAuxRow cxm) (vAuxCol cxm) (\(_, _) -> (Unknown::Status))
 } where
-    status = ((bStr2IntList s u) . bodyBytes) cmx
-    s = setFlag cmx
-    u = unsetFlag cmx
+    status = ((bStr2StatusList s u) . bodyBytes) cxm
+    s = setFlag cxm
+    u = unSetFlag cxm
 
 loadChessBoard' :: [Int] -> [Int] -> [Status] -> ChessBoard
 loadChessBoard' (vr:vc:vs) (hr:hc:hs) ms = 
@@ -86,3 +89,15 @@ cleanMosaic d = ChessBoard {
                             newUserMosaic = matrix row col (\(_, _) -> Unknown)
                             row = nrows $ goldenMosaic d
                             col = ncols $ goldenMosaic d
+
+-----------------test of load-------------------------
+
+test = do
+    inh <- S.openBinaryFile "u.cxm" ReadMode
+    instr <- B.hGetContents inh
+    hClose inh
+    case parse parseCMX instr of
+        Right c -> return (Just( loadChessBoard c))
+        Left err -> do
+            S.putStrLn err
+            return (Nothing)

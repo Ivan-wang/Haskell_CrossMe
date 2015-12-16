@@ -92,7 +92,7 @@ cleanMosaic d = ChessBoard {
 
 -----------------test of load-------------------------
 
-test = do
+testOfLoad = do
     inh <- S.openBinaryFile "u.cxm" ReadMode
     instr <- B.hGetContents inh
     hClose inh

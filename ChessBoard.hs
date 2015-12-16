@@ -3,6 +3,7 @@ module ChessBoard (
     hHeader,
     goldenMosaic,
     userMosaic,
+    initChessBoard,
     loadChessBoard,
     switchLocation,
     getMosaicRow,
@@ -23,6 +24,17 @@ data ChessBoard = ChessBoard {
   goldenMosaic :: Matrix Status,
   userMosaic :: Matrix Status
 } deriving (Show)
+
+initChessBoard :: ChessBoard
+initChessBoard = ChessBoard {
+    vHeader = zero 1 1,
+    hHeader = zero 1 1,
+    goldenMosaic = fromList 1 1 [Unknown],
+    userMosaic = fromList 1 1 [Unknown]
+}
+
+--fillChessBoard :: CXM -> ChessBoard -> ChessBoard
+--fillChessBoard cxm ch = 
 
 loadChessBoard :: CXM -> ChessBoard
 loadChessBoard cxm = ChessBoard {

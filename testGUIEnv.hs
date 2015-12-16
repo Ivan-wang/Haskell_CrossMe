@@ -9,12 +9,14 @@ import Utils
 
 
 main = do
-    cb <- testOfLoad
-    case cb of
+    cmxObj <- testOfLoad
+    case cmxObj of
         Nothing -> return (Nothing)
         Just c -> do
-            varC <- varCreate c
-            newC <- (varUpdate varC (switchLocation 1 1))
+            varC <- varCreate initChessBoard
+            varUpdate varC (\old -> loadChessBoard c)
+            varUpdate varC (switchLocation 1 1)
+            newC <- varGet varC
             return (Just newC)
 
 
@@ -23,7 +25,7 @@ testOfLoad = do
     instr <- B.hGetContents inh
     hClose inh
     case parse parseCMX instr of
-        Right c -> return (Just( loadChessBoard c))
+        Right c -> return (Just c)
         Left err -> do
             S.putStrLn err
             return (Nothing)

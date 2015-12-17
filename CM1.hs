@@ -26,7 +26,7 @@ gui =  do -- create top frame
     --scrolledWindowSetScrollbars s 20 20 40 40 0 0 False
 
     set f [ layout := column 0
-            [ fill $ widget p
+            [ fill $ minsize (sz maxX maxY) (widget p)
             , hfloatCentre $ margin 5 $ row 5 [widget q, widget h, widget a]
             ]
         , defaultButton := q
@@ -54,26 +54,30 @@ onMouse1 w vballs mouse
     -- add a new ball
 dropBall w varC pt
       = do
-        c <- varGet varC 
-        varUpdate varC (switchLocation (rownum pt $ (nrows . hHeader) c) (colnum pt $ (ncols . vHeader) c))
-        windowRefresh w False
+            c <- varGet varC 
+            let  newrow  = rownum pt $ (nrows . hHeader) c
+                         --newcol=colnum pt $ (ncols . vHeader) c
+            if(0<newrow && newrow <= ((nrows.vHeader)c))    
+                            then varUpdate varC (switchLocation (rownum pt $ (nrows . hHeader) c) (colnum pt $ (ncols . vHeader) c))
+            else varUpdate varC ( \old->id c)
+            windowRefresh w False
 
     -- paint the balls
 paintBalls varC dc  viewRect --updateAreas
       = withBrushStyle (BrushStyle BrushSolid white)  $ \brushWhite ->
         do 
             dcSetBrush dc brushWhite
-            dcDrawRectangle dc (rect (pt 20 20) (sz 500 500))
+            dcDrawRectangle dc (rect (pt 0 0) (sz 400 600))
             user <- varGet varC
             let newY = 85 + 20 * ((nrows . hHeader) user)
                 newX = 85 + 20 * ((ncols . vHeader) user)
                 cols = ((ncols . hHeader) user) + ((ncols . vHeader) user)
                 rows = ((nrows . vHeader) user) + ((nrows . hHeader) user)
             drawgrid3 dc ((toLists . userMosaic) user)(Rect (newX-5) (newY-5) 20 20)
-            writeNum3 dc (pt newX 85) ((toLists . vHeader) user)
+            writeNum3 dc (pt newX 85) ((toLists . hHeader) user)
             drawLine2 dc (pt 80 80) cols rows
             drawLine2_ dc (pt 80 80) cols rows
-            writeNum3 dc (pt 85 newY) ((toLists . hHeader) user)
+            writeNum3 dc (pt 85 newY) ((toLists . vHeader) user)
        
 --horizontal--         
 drawLine::DC()->Int->Point->IO()
@@ -132,6 +136,10 @@ testOfLoad = do
         Left err -> do
             S.putStrLn err
             return (Nothing)
+---------------------------------------------------------------------
+maxX, maxY :: Int
+maxY   = 400
+maxX   = 320
 ---------------------------------------------------------------------           
 about :: Window a -> IO ()
 about w

@@ -33,18 +33,18 @@ data ChessBoard = ChessBoard {
 initChessBoard :: ChessBoard
 initChessBoard = ChessBoard {
     name = "",
-    vHeader = zero 1 1,
-    hHeader = zero 1 1,
-    goldenMosaic = fromList 1 1 [Unknown],
-    userMosaic = fromList 1 1 [Unknown]
+    vHeader = zero 0 0,
+    hHeader = zero 0 0,
+    goldenMosaic = fromList 0 0 [Unknown],
+    userMosaic = fromList 0 0 [Unknown]
 }
 
 newChessBoard :: Int -> Int -> ChessBoard
 newChessBoard row col = ChessBoard {
     name = "",
-    vHeader = zero 1 1,
-    hHeader = zero 1 1,
-    goldenMosaic = fromList 1 1 [Unknown],
+    vHeader = zero 0 0,
+    hHeader = zero 0 0,
+    goldenMosaic = fromList 0 0 [Unknown],
     userMosaic = matrix row col (\(_, _) -> Unknown)
 }
 
@@ -110,8 +110,8 @@ switchLocation row col d
 
 getMosaicLine :: Int -> ChessBoard -> ChessBoard
 getMosaicLine n c
-    | n `mod` 2 == 1 = getMosaicRow (n `div` 2 + 1) c
-    | otherwise = getMosaicCol (n `div` 2) c
+    | n <= ((nrows . userMosaic) c) = getMosaicRow n c
+    | otherwise = getMosaicCol (n - ((nrows . userMosaic) c)) c
 
 getMosaicCol :: Int -> ChessBoard -> ChessBoard
 getMosaicCol col d 

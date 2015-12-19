@@ -11,7 +11,8 @@ module CXM (
     hAuxBytes,
     setFlag,
     unSetFlag,
-    bodyBytes) where
+    bodyBytes,
+    loadFromFile) where
 
 
 import qualified Data.ByteString as B
@@ -19,7 +20,7 @@ import qualified Data.ByteString.Char8 as B8
 import qualified Data.Word as W
 import qualified Control.Applicative
 import Control.Monad
-import System.IO
+import System.IO as S
 import Utils
 
 data CXM = CXM {
@@ -161,13 +162,28 @@ parseCMX = (matchPrefix "CXM")  ==> \header -> skipSpace                 ==>&
             (parseBlock (bRow * bCol)) ==> 
             (\bBlock -> identity (CXM vRow vCol hRow hCol sC uC name vBlock hBlock bBlock))
 
--------------To test a parser-------------------------------
+-------------LOAD FROM FILE----------------
+
+loadFromFile :: String -> IO (Maybe CXM)
+loadFromFile fileName = do
+    inh <- openBinaryFile fileName ReadMode
+    instr <- B.hGetContents inh
+    hClose inh
+    case parse parseCMX instr of
+        Right c -> return (Just c)
+        Left err -> do
+            S.putStrLn err
+            return (Nothing)
+
+
+-------------To test a parser--------------
 
 parse :: Parser a -> B.ByteString -> Either String a
 parse parser initS
     = case runParser parser (ParseState initS) of
         Left err -> Left err
         Right (r, _) -> Right r
+
 
 main = 
     do

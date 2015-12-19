@@ -32,7 +32,7 @@ testOfRandom = do
 
 
 initProgress varVar = do
-    cmxObj <- testOfLoad
+    cmxObj <- loadFromFile "u.cxm"
     case cmxObj of 
         Nothing -> varUpdate varVar (id)
         Just c-> do

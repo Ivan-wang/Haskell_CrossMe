@@ -55,10 +55,10 @@ onMouse1 w vballs mouse
 dropBall w varC pt
       = do
             c <- varGet varC 
-            let  newrow  = rownum pt $ (nrows . hHeader) c
-                         --newcol=colnum pt $ (ncols . vHeader) c
-            if(0<newrow && newrow <= ((nrows.vHeader)c))    
-                            then varUpdate varC (switchLocation (rownum pt $ (nrows . hHeader) c) (colnum pt $ (ncols . vHeader) c))
+            let newrow = rownum pt $ (nrows . hHeader) c
+                newcol = colnum pt $ (ncols . vHeader) c
+            if (0<newrow && newrow <= ((nrows.vHeader)c))    
+            then varUpdate varC (switchLocation (rownum pt $ (nrows . hHeader) c) (colnum pt $ (ncols . vHeader) c))
             else varUpdate varC ( \old->id c)
             windowRefresh w False
 

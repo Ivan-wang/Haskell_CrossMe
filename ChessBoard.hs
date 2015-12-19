@@ -97,7 +97,7 @@ compareCol c n = (((getCol n) . userMosaic) c) == (((getCol n) . goldenMosaic) c
 
 switchLocation :: Int -> Int -> ChessBoard -> ChessBoard
 switchLocation row col d
-    | not ((isValid) row col d) = d
+    | not ((isValid) col row d) = d
     | otherwise = ChessBoard {
                                 name = name d,
                                 vHeader = vHeader d,

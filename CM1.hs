@@ -81,40 +81,47 @@ paintBalls varC dc  viewRect --updateAreas
        
 --horizontal--         
 drawLine::DC()->Int->Point->IO()
-drawLine dc  n (Point x y)=
- do  dcWithPenStyle dc (penDefault{ _penWidth = 2, _penColor=rgb 0x70 0x80 0x90 }) $
-             line dc (pt x y)(pt x (y+20*n))[]
+drawLine dc n (Point x y) =
+    do  dcWithPenStyle dc (penDefault{ _penWidth = 2, _penColor=rgb 0x70 0x80 0x90 }) $
+            line dc (pt x y)(pt x (y+20*n))[]
+
 drawLine2::DC()->Point->Int->Int->IO()
-drawLine2 dc (Point a b) m n= mapM_ (drawLine dc n)[(pt (a+20*x) b)|x<-[0..m]]
+drawLine2 dc (Point a b) m n = mapM_ (drawLine dc n)[(pt (a+20*x) b)|x<-[0..m]]
+
 --vertical--
 drawLine_::DC()->Int->Point->IO()
-drawLine_ dc  n (Point x y)=
- do  dcWithPenStyle dc (penDefault{ _penWidth = 2, _penColor=rgb 0x70 0x80 0x90 }) $
-             line dc (pt x y)(pt (x+20*n) y)[]
+drawLine_ dc n (Point x y) =
+    do  dcWithPenStyle dc (penDefault{ _penWidth = 2, _penColor=rgb 0x70 0x80 0x90 }) $
+            line dc (pt x y)(pt (x+20*n) y)[]
+
 drawLine2_::DC()->Point->Int->Int->IO()
-drawLine2_ dc (Point a b)n m= mapM_ (drawLine_ dc n)[(pt 80(80+20*x))|x<-[0..m]]
+drawLine2_ dc (Point a b)n m = mapM_ (drawLine_ dc n)[(pt 80(80+20*x))|x<-[0..m]]
+
 --num--
 writeNum:: DC()->Point->Int->IO()
 writeNum  dc  (Point x y) n =
- do   if (n/=0) then dcWithFontStyle dc fontSwiss{ _fontSize = 10, _fontWeight = WeightBold } $
-                                  do dcDrawText dc (show n)(pt x y)
-                                  else return()
+    do  if (n/=0) 
+        then dcWithFontStyle dc fontSwiss{ _fontSize = 10, _fontWeight = WeightBold } $
+            do dcDrawText dc (show n)(pt x y)
+        else return()
+
 writeNum2::DC()->Point->[Int]->IO()
 writeNum2 dc (Point x y) m = mapM_  (\a->do  writeNum dc (Point (x+20*a) y)(m!!a))[0..((length m)-1)]
+
 writeNum3::DC()->Point->[[Int]]->IO()
 writeNum3 dc (Point x y) mm = mapM_(\a->do writeNum2 dc(Point x (y+20*a))(mm!!a))[0..((length mm)-1)]
---drawgrid::DC()->Int->Rect->IO()
+
 drawgrid dc (n, (Rect x y w h))
-      |n==Set      = dcWithBrushStyle dc (BrushStyle BrushSolid darkgrey) $
+    |n==Set = dcWithBrushStyle dc (BrushStyle BrushSolid darkgrey) $
         dcDrawRectangle dc (rect (pt x y) (sz w h))
-      |n==Unset  = dcWithBrushStyle dc (BrushStyle (BrushHatch HatchCrossDiag) black) $
+    |n==Unset = dcWithBrushStyle dc (BrushStyle (BrushHatch HatchCrossDiag) black) $
          dcDrawRectangle dc (rect (pt x y) (sz w h))
-      |n==Unknown  = dcWithBrushStyle dc (BrushStyle BrushSolid white) $
+    |n==Unknown = dcWithBrushStyle dc (BrushStyle BrushSolid white) $
         dcDrawRectangle dc (rect (pt x y) (sz w h))
---drawgrid2::DC()->[Int]->Rect->IO()      
-drawgrid2 dc (m, (Rect x y w h))=mapM_(drawgrid  dc)[(a, (Rect (x+20*b) y 20 20))|(a,b)<-zip m [0..(length(m)-1)]]
+
+drawgrid2 dc (m, (Rect x y w h)) = mapM_(drawgrid  dc)[(a, (Rect (x+20*b) y 20 20))|(a,b)<-zip m [0..(length(m)-1)]]
 --drawgird3
-drawgrid3 dc mm (Rect x y w h)=mapM_(drawgrid2 dc)[(a,(Rect x (y+20*b)20 20))|(a,b)<-zip mm [0..(length(mm)-1)]]
+drawgrid3 dc mm (Rect x y w h) = mapM_(drawgrid2 dc)[(a,(Rect x (y+20*b)20 20))|(a,b)<-zip mm [0..(length(mm)-1)]]
 
 ---------------------------------------------------------------------
 newpt::Point->Point

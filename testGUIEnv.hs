@@ -1,3 +1,4 @@
+
 import Graphics.UI.WX
 import ChessBoard
 import System.IO as S
@@ -9,15 +10,19 @@ import Utils
 
 
 main = do
+    varC <- varCreate initChessBoard
     cmxObj <- testOfLoad
     case cmxObj of
-        Nothing -> return (Nothing)
+        Nothing -> varUpdate varC (id)
         Just c -> do
-            varC <- varCreate initChessBoard
+            --varC <- varCreate initChessBoard
             varUpdate varC (\old -> loadChessBoard c)
-            varUpdate varC (switchLocation 1 1)
-            newC <- varGet varC
-            return (Just newC)
+    varUpdate varC (switchLocation 1 1)
+    newC <- varGet varC
+    --isRight <- fmap checkMosaic (varGet varC)
+    case checkMosaic newC of
+        True -> return (True)
+        False -> return (False)
 
 
 testOfLoad = do

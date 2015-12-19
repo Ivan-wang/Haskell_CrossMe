@@ -12,7 +12,7 @@ module ChessBoard (
     cleanMosaic) where
 
 import System.IO as S
-import Data.ByteString as B
+import qualified Data.ByteString as B
 import Data.Matrix
 import CXM
 import Status
@@ -57,7 +57,9 @@ loadChessBoard' (vr:vc:vs) (hr:hc:hs) ms =
     }
 
 switchLocation :: Int -> Int -> ChessBoard -> ChessBoard
-switchLocation row col d = ChessBoard {
+switchLocation row col d
+    | not ((isValid) row col d) = d
+    | otherwise = ChessBoard {
                                 vHeader = vHeader d,
                                 hHeader = hHeader d,
                                 goldenMosaic = goldenMosaic d,
@@ -67,7 +69,9 @@ switchLocation row col d = ChessBoard {
                                     oldVal = getElem row col $ userMosaic d
 
 getMosaicCol :: Int -> ChessBoard -> ChessBoard
-getMosaicCol col d = ChessBoard {                        
+getMosaicCol col d 
+    | not (isInRange 1 ((ncols . userMosaic) d) col) = d
+    | otherwise = ChessBoard {                        
                         vHeader = vHeader d,
                         hHeader = hHeader d,
                         goldenMosaic = goldenMosaic d,
@@ -78,7 +82,9 @@ getMosaicCol col d = ChessBoard {
                             goldenCol = \row _ -> getElem row col $ goldenMosaic d
 
 getMosaicRow :: Int -> ChessBoard -> ChessBoard
-getMosaicRow row d = ChessBoard {
+getMosaicRow row d 
+    | not (isInRange 1 ((nrows . userMosaic) d) row) = d
+    | otherwise = ChessBoard {
                         vHeader = vHeader d,
                         hHeader = hHeader d,
                         goldenMosaic = goldenMosaic d,
@@ -101,6 +107,15 @@ cleanMosaic d = ChessBoard {
                             newUserMosaic = matrix row col (\(_, _) -> Unknown)
                             row = nrows $ goldenMosaic d
                             col = ncols $ goldenMosaic d
+
+isInRange :: Int -> Int -> Int -> Bool
+isInRange start end pos = pos `elem` [start .. end]
+
+isValid :: Int -> Int ->ChessBoard -> Bool
+isValid x y c = (isInRange 1 colNum x) && (isInRange 1 rowNum y)
+    where
+        colNum = 1 + ((ncols . userMosaic) c)
+        rowNum = 1 + ((nrows . userMosaic) c)
 
 -----------------test of load-------------------------
 

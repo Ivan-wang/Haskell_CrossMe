@@ -4,6 +4,7 @@ module CXM (
     parseCMX,
     vAuxRow,
     vAuxCol,
+    cxmName,
     vAuxBytes,
     hAuxRow,
     hAuxCol,
@@ -28,6 +29,7 @@ data CXM = CXM {
     hAuxCol :: Int,
     setFlag :: Char,
     unSetFlag :: Char,
+    cxmName :: String,
     vAuxBytes :: B.ByteString,
     hAuxBytes :: B.ByteString,
     bodyBytes :: B.ByteString
@@ -118,6 +120,16 @@ matchPrefix :: [Char] -> Parser ()
 matchPrefix [] = identity ()
 matchPrefix (c:cs) = (matchChar (== c)) ==> \_ -> matchPrefix cs
 
+parseString :: Parser String
+parseString = do
+    mp <- (fmap ((== ' ') . w2c) <$> peekByte)
+    if mp == Just False
+    then do
+        b <- parseByte
+        ((w2c b) :) <$> parseString
+    else identity []
+
+
 skipSpace :: Parser ()
 skipSpace = (fmap ((== ' ') . w2c) <$> peekByte) ==> \isM -> 
                     if isM == Just True
@@ -135,6 +147,8 @@ parseBlock l = (((B.take l) . remain) <$> getState) ==> \list ->
 
 parseCMX :: Parser CXM
 parseCMX = (matchPrefix "CXM")  ==> \header -> skipSpace                 ==>&
+            (matchPrefix "N") ==> \nHeader -> skipSpace                  ==>&
+            parseString ==> \name -> skipSpace                           ==>&
             (matchPrefix "H")   ==> \hHeader -> skipSpace                ==>&
             parseInt    ==> \hRow -> parseInt   ==> \hCol -> skipSpace   ==>& 
             (parseBlock (hRow * hCol))  ==> \hBlock -> skipSpace         ==>&
@@ -145,7 +159,7 @@ parseCMX = (matchPrefix "CXM")  ==> \header -> skipSpace                 ==>&
             parseInt    ==> \bRow -> parseInt   ==> \bCol -> skipSpace   ==>&
             parseChar   ==> \sC -> parseChar    ==> \uC -> skipSpace     ==>&
             (parseBlock (bRow * bCol)) ==> 
-            (\bBlock -> identity (CXM vRow vCol hRow hCol sC uC vBlock hBlock bBlock))
+            (\bBlock -> identity (CXM vRow vCol hRow hCol sC uC name vBlock hBlock bBlock))
 
 -------------To test a parser-------------------------------
 

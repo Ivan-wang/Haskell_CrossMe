@@ -9,9 +9,11 @@ module ChessBoard (
     getMosaicRow,
     getMosaicCol,
     checkMosaic,
+    hint,
     cleanMosaic) where
 
 import System.IO as S
+import System.Random as R
 import qualified Data.ByteString as B
 import Data.Matrix
 import CXM
@@ -33,9 +35,6 @@ initChessBoard = ChessBoard {
     userMosaic = fromList 1 1 [Unknown]
 }
 
---fillChessBoard :: CXM -> ChessBoard -> ChessBoard
---fillChessBoard cxm ch = 
-
 loadChessBoard :: CXM -> ChessBoard
 loadChessBoard cxm = ChessBoard {
     vHeader = fromList (vAuxRow cxm) (vAuxCol cxm) ((bStr2IntList . vAuxBytes) cxm),
@@ -56,6 +55,27 @@ loadChessBoard' (vr:vc:vs) (hr:hc:hs) ms =
         userMosaic = matrix vr hc (\(_, _) -> (Unknown::Status))
     }
 
+hint :: IO ChessBoard -> IO ChessBoard
+hint ioCB = do
+    cb <- ioCB
+    let m = (nrows . userMosaic) cb
+    r <- randomRIO (1, m)
+    case compareLine cb r of
+        True -> hint ioCB
+        False -> return (getMosaicLine r cb) 
+
+
+compareLine :: ChessBoard -> Int -> Bool
+compareLine c n
+    | n `mod` 2 == 1 = compareRow c (n `div` 2 + 1)
+    | otherwise = compareCol c (n `div` 2)
+
+compareRow :: ChessBoard -> Int -> Bool
+compareRow c n = (((getRow n) . userMosaic) c) == (((getRow n) . goldenMosaic) c)
+
+compareCol :: ChessBoard -> Int -> Bool
+compareCol c n = (((getCol n) . userMosaic) c) == (((getCol n) . goldenMosaic) c)
+
 switchLocation :: Int -> Int -> ChessBoard -> ChessBoard
 switchLocation row col d
     | not ((isValid) row col d) = d
@@ -67,6 +87,11 @@ switchLocation row col d
                                 } where
                                     oldMosaic = userMosaic d
                                     oldVal = getElem row col $ userMosaic d
+
+getMosaicLine :: Int -> ChessBoard -> ChessBoard
+getMosaicLine n c
+    | n `mod` 2 == 1 = getMosaicRow (n `div` 2 + 1) c
+    | otherwise = getMosaicCol (n `div` 2) c
 
 getMosaicCol :: Int -> ChessBoard -> ChessBoard
 getMosaicCol col d 

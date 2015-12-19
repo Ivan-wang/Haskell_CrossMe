@@ -24,6 +24,20 @@ main = do
         True -> return (True)
         False -> return (False)
 
+--------------Test of random----------
+testOfRandom = do
+    varC <- varCreate initChessBoard
+    let ioVar = initProgress varC
+    hint ioVar
+
+
+initProgress varVar = do
+    cmxObj <- testOfLoad
+    case cmxObj of 
+        Nothing -> varUpdate varVar (id)
+        Just c-> do
+            varUpdate varVar (\_ -> loadChessBoard c)
+
 
 testOfLoad = do
     inh <- S.openBinaryFile "u.cxm" ReadMode

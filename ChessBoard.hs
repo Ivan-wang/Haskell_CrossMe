@@ -42,9 +42,9 @@ initChessBoard = ChessBoard {
     userMosaic = fromList 0 0 [Unknown]
 }
 
-newChessBoard :: Int -> Int -> ChessBoard
-newChessBoard row col = ChessBoard {
-    name = "",
+newChessBoard :: Int -> Int -> String->ChessBoard
+newChessBoard row col  na= ChessBoard {
+    name = na,
     vHeader = zero 0 0,
     hHeader = zero 0 0,
     goldenMosaic = fromList 0 0 [Unknown],
@@ -179,7 +179,7 @@ expandChessBoard :: ChessBoard -> ChessBoard
 expandChessBoard raw = ChessBoard {
     name = name raw,
     vHeader = summaryMtrix (userMosaic raw),
-    hHeader = summaryMtrix ((transpose . userMosaic) raw),
+    hHeader = (transpose . summaryMtrix) ((transpose . userMosaic) raw),
     goldenMosaic = userMosaic raw,
     userMosaic = matrix row col (\(_, _) -> Unknown)
 } where

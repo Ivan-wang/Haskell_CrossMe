@@ -7,7 +7,8 @@ module Utils (
     status2char,
     bStr2StatusList,
     statusList2bStr,
-    intList2bStr
+    intList2bStr,
+    str2Int
     ) where
 
 import qualified Data.ByteString as B
@@ -46,6 +47,9 @@ statusList2bStr set unset (x:xs) = B.cons ((BS.c2w . (status2char set unset)) x)
 
 intList2bStr :: [Int] -> B.ByteString
 intList2bStr = B.pack . (map i2w)
+
+str2Int :: String -> Int
+str2Int  m  = read  m  :: Int
 
 --toolkit functions
 w2c :: W.Word8 -> Char

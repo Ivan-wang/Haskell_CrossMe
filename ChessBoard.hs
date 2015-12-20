@@ -12,6 +12,7 @@ module ChessBoard (
     getMosaicRow,
     getMosaicCol,
     checkMosaic,
+    expandChessBoard,
     hint,
     cleanMosaic) where
 

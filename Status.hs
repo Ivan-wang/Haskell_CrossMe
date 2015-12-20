@@ -13,7 +13,6 @@ instance Eq Status where
     Set == Set = True
     Set == _ = False
     _ == Set = False
-    Unknown==Unset = False
     _ == _ = True
 
 switch :: Status -> Status

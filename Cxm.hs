@@ -1,21 +1,14 @@
 module CXM (
-    CXM,
+    CXM(..),
     parse,
     parseCMX,
-    vAuxRow,
-    vAuxCol,
-    cxmName,
-    vAuxBytes,
-    hAuxRow,
-    hAuxCol,
-    hAuxBytes,
-    setFlag,
-    unSetFlag,
-    bodyBytes,
-    loadFromFile) where
+    loadFromFile,
+    serialize,
+    exportToFile) where
 
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Word as W
 import qualified Control.Applicative
@@ -162,7 +155,29 @@ parseCMX = (matchPrefix "CXM")  ==> \header -> skipSpace                 ==>&
             (parseBlock (bRow * bCol)) ==> 
             (\bBlock -> identity (CXM vRow vCol hRow hCol sC uC name vBlock hBlock bBlock))
 
--------------LOAD FROM FILE----------------
+--------------NEW A CXM FROM USER---------------
+
+serialize :: CXM -> B.ByteString
+serialize cxm = B.concat [B8.pack "CMX", 
+    B8.pack " N",
+    (B8.pack . cxmName) cxm,
+    B8.pack " V",
+    (B.singleton . i2w . vAuxRow) cxm,
+    (B.singleton . i2w . vAuxCol) cxm,
+    B8.pack " ",
+    vAuxBytes cxm,
+    B8.pack " H",
+    (B.singleton . i2w . hAuxRow) cxm,
+    (B.singleton . i2w . hAuxCol) cxm,
+    hAuxBytes cxm,
+    B8.pack " B",
+    (B.singleton . i2w . vAuxRow) cxm,
+    (B.singleton . i2w . hAuxCol) cxm,
+    B8.pack " SR",
+    bodyBytes cxm,
+    B8.empty]
+
+-------------IMPORT AND EXPORT----------------
 
 loadFromFile :: String -> IO (Maybe CXM)
 loadFromFile fileName = do
@@ -174,6 +189,12 @@ loadFromFile fileName = do
         Left err -> do
             S.putStrLn err
             return (Nothing)
+
+exportToFile :: String -> CXM -> IO ()
+exportToFile fileName cmxObj = do
+    inh <- openBinaryFile fileName WriteMode
+    B.hPut inh (serialize cmxObj)
+    hClose inh
 
 
 -------------To test a parser--------------

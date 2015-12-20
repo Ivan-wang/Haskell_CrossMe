@@ -24,8 +24,8 @@ main = do
         True -> return (True)
         False -> return (False)
 
---------------Test of random----------
-testOfRandom = do
+--------------Test of hint----------
+testOfHint = do
     varC <- varCreate initChessBoard
     let ioVar = initProgress varC
     hint ioVar
@@ -38,7 +38,7 @@ initProgress varVar = do
         Just c-> do
             varUpdate varVar (\_ -> loadChessBoard c)
 
-
+---------------Test of load-----------------
 testOfLoad = do
     inh <- S.openBinaryFile "u.cxm" ReadMode
     instr <- B.hGetContents inh
@@ -48,3 +48,17 @@ testOfLoad = do
         Left err -> do
             S.putStrLn err
             return (Nothing)
+
+--------------Test of export-----------------
+testOfExport :: IO ()
+testOfExport = do
+    varC <- varCreate initChessBoard
+    initProgress varC
+    cb <- varGet varC
+    --Here cb is a pure complete ChessBoard
+    --if cb came from user data you can:
+    --use varGet to convert Var ChessBoard to IO ChessBoard
+    --use <- to take out ChessVBoard from IO
+    --use expandChessBoard to rebuild the header
+    --Then you can write it to file like following:
+    ((exportToFile "new.cxm") . saveChessBoard) cb

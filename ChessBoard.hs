@@ -8,6 +8,7 @@ module ChessBoard (
     loadChessBoard,
     switchLocation,
     newChessBoard,
+    saveChessBoard,
     getMosaicRow,
     getMosaicCol,
     checkMosaic,
@@ -17,6 +18,7 @@ module ChessBoard (
 import System.IO as S
 import System.Random as R
 import qualified Data.ByteString as B
+import qualified Data.List as L
 import Data.Matrix
 import CXM
 import Status
@@ -49,7 +51,18 @@ newChessBoard row col = ChessBoard {
 }
 
 saveChessBoard :: ChessBoard -> CXM
-saveChessBoard = undefined
+saveChessBoard cb = CXM {
+    vAuxRow = (nrows . vHeader) cb,
+    vAuxCol = (ncols . vHeader) cb,
+    hAuxRow = (nrows . hHeader) cb,
+    hAuxCol = (ncols . hHeader) cb,
+    setFlag = 'S',
+    unSetFlag = 'R',
+    cxmName = name cb,
+    vAuxBytes = (intList2bStr . toList . vHeader) cb,
+    hAuxBytes = (intList2bStr . toList . hHeader) cb,
+    bodyBytes = ((statusList2bStr 'S' 'R') . toList . goldenMosaic) cb
+}
 
 loadChessBoard :: CXM -> ChessBoard
 loadChessBoard cxm = ChessBoard {
@@ -156,6 +169,36 @@ cleanMosaic d = ChessBoard {
                             row = nrows $ goldenMosaic d
                             col = ncols $ goldenMosaic d
 
+-------------Toolkit functions----------------
+
+--This function expand a partial chess board to a entire one
+--partial chess board must have a name and a userMosaic
+--and this function will rebuild the headers according to the userMosaic
+expandChessBoard :: ChessBoard -> ChessBoard
+expandChessBoard raw = ChessBoard {
+    name = name raw,
+    vHeader = summaryMtrix (userMosaic raw),
+    hHeader = summaryMtrix ((transpose . userMosaic) raw),
+    goldenMosaic = userMosaic raw,
+    userMosaic = matrix row col (\(_, _) -> Unknown)
+} where
+    row = (nrows . userMosaic) raw
+    col = (ncols . userMosaic) raw
+
+
+summary :: [Status] -> [Int]
+summary l = map length $ filter ((== Set) . head) $ L.group l
+
+allignSummary :: Int -> [Int] -> [Int]
+allignSummary len l
+    | length l == len = l
+    | otherwise = (replicate (len - (length l)) 0) ++ l 
+
+summaryMtrix :: Matrix Status -> Matrix Int
+summaryMtrix m = fromLists (map (allignSummary maxL) s) where
+    s = map summary $ toLists m
+    maxL = maximum (map length s)
+
 isInRange :: Int -> Int -> Int -> Bool
 isInRange start end pos = pos `elem` [start .. end]
 
@@ -164,6 +207,7 @@ isValid x y c = (isInRange 1 colNum x) && (isInRange 1 rowNum y)
     where
         colNum = (ncols . userMosaic) c
         rowNum = (nrows . userMosaic) c
+
 
 -----------------test of load-------------------------
 

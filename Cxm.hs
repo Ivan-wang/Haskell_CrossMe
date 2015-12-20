@@ -165,17 +165,18 @@ serialize cxm = B.concat [B8.pack "CXM",
     (B.singleton . i2w . hAuxRow) cxm,
     (B.singleton . i2w . hAuxCol) cxm,
     B8.pack " ",
-    vAuxBytes cxm,
+    hAuxBytes cxm,
     B8.pack " V",
     (B.singleton . i2w . vAuxRow) cxm,
     (B.singleton . i2w . vAuxCol) cxm,
-    hAuxBytes cxm,
+    B8.pack " ",
+    vAuxBytes cxm,
     B8.pack " B",
     (B.singleton . i2w . vAuxRow) cxm,
     (B.singleton . i2w . hAuxCol) cxm,
     B8.pack " SR ",
     bodyBytes cxm,
-    B8.empty]
+    B8.pack " "]
 
 -------------IMPORT AND EXPORT----------------
 

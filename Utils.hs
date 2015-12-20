@@ -40,8 +40,9 @@ bStr2StatusList set unset s = case B.uncons s of
 
 statusList2bStr :: Char -> Char -> [Status] -> B.ByteString
 statusList2bStr set unset [] = B8.empty
-statusList2bStr set unset (x:xs) = B.snoc (statusList2bStr set unset xs) $
-                                        (BS.c2w . (status2char set unset)) x
+statusList2bStr set unset (x:xs) = B.cons ((BS.c2w . (status2char set unset)) x) 
+                                        $ statusList2bStr set unset xs
+                                        
 
 intList2bStr :: [Int] -> B.ByteString
 intList2bStr = B.pack . (map i2w)

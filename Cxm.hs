@@ -140,21 +140,36 @@ parseBlock l = (((B.take l) . remain) <$> getState) ==> \list ->
                 else Parser (\_ -> Left "block size not match")
 
 parseCMX :: Parser CXM
-parseCMX = (matchPrefix "CXM")  ==> \header -> skipSpace                 ==>&
-            (matchPrefix "N") ==> \nHeader -> skipSpace                  ==>&
-            parseString ==> \name -> skipSpace                           ==>&
-            (matchPrefix "H")   ==> \hHeader -> skipSpace                ==>&
-            parseInt    ==> \hRow -> parseInt   ==> \hCol -> skipSpace   ==>& 
-            (parseBlock (hRow * hCol))  ==> \hBlock -> skipSpace         ==>&
-            (matchPrefix "V")   ==> \vHeader -> skipSpace                ==>&
-            parseInt    ==> \vRow -> parseInt   ==> \vCol -> skipSpace   ==>&
-            (parseBlock (vRow * vCol))  ==> \vBlock -> skipSpace         ==>& 
-            (matchPrefix "B")   ==> \bHeader -> skipSpace                ==>&
-            parseInt    ==> \bRow -> parseInt   ==> \bCol -> skipSpace   ==>&
-            parseChar   ==> \sC -> parseChar    ==> \uC -> skipSpace     ==>&
-            (parseBlock (bRow * bCol)) ==> 
-            (\bBlock -> identity (CXM vRow vCol hRow hCol sC uC name vBlock hBlock bBlock))
-
+parseCMX = do
+    matchPrefix "CXM"
+    skipSpace
+    matchPrefix "N"
+    skipSpace
+    name <- parseString
+    skipSpace
+    matchPrefix "H"
+    hRow <- parseInt
+    hCol <- parseInt
+    skipSpace
+    hBlock <- parseBlock (hRow * hCol)
+    skipSpace
+    matchPrefix "V"
+    skipSpace
+    vRow <- parseInt
+    vCol <- parseInt
+    skipSpace
+    vBlock <- parseBlock (vRow * vCol)
+    skipSpace
+    matchPrefix "B"
+    skipSpace
+    bRow <- parseInt
+    bCol <- parseInt
+    skipSpace
+    sC <- parseChar
+    rC <- parseChar
+    skipSpace
+    bBlock <- parseBlock (bRow * bCol)
+    identity (CXM vRow vCol hRow hCol sC rC name vBlock hBlock bBlock)
 --------------NEW A CXM FROM USER---------------
 
 serialize :: CXM -> B.ByteString
